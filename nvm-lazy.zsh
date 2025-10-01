@@ -1,55 +1,33 @@
-# --- Fast default Node (without loading nvm.sh) ---
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
-# Read the default version from alias (if exists), otherwise from ~/.nvmrc
+# 1) Prefer project's .nvmrc in $PWD (if present)
+_nvm_project_ver=""
+[ -r "$PWD/.nvmrc" ] && _nvm_project_ver="$(cat "$PWD/.nvmrc")"
+
+# 2) Otherwise fall back to alias/default, then ~/.nvmrc
 _nvm_default_ver=""
-[ -r "$NVM_DIR/alias/default" ] && _nvm_default_ver="$(cat "$NVM_DIR/alias/default")"
-[ -z "$_nvm_default_ver" ] && [ -r "$HOME/.nvmrc" ] && _nvm_default_ver="$(cat "$HOME/.nvmrc")"
+[ -z "$_nvm_project_ver" ] && [ -r "$NVM_DIR/alias/default" ] && _nvm_default_ver="$(cat "$NVM_DIR/alias/default")"
+[ -z "$_nvm_project_ver$_nvm_default_ver" ] && [ -r "$HOME/.nvmrc" ] && _nvm_default_ver="$(cat "$HOME/.nvmrc")"
 
-# If version looks like vX.Y.Z and exists, prepend its bin directory to PATH
-if [[ "$_nvm_default_ver" == v* ]] && [ -d "$NVM_DIR/versions/node/$_nvm_default_ver/bin" ]; then
-  export PATH="$NVM_DIR/versions/node/$_nvm_default_ver/bin:$PATH"
+# 3) Resolve and prepend PATH (project wins)
+_nvm_used_startup=""
+if [ -n "$_nvm_project_ver" ]; then
+  _v="$_nvm_project_ver"
+  # allow "20" or "20.12" by expanding to highest installed v20* / v20.12*
+  _glob="$([[ "$_v" == v* ]] && printf '%s' "$_v" || printf 'v%s*' "$_v")"
+  _resolved="$(printf '%s\n' "$NVM_DIR/versions/node/"$_glob"" 2>/dev/null \
+    | awk -F'/node/' 'NF>1{print $2}' | sort -V | tail -n1)"
+  if [ -n "$_resolved" ] && [ -d "$NVM_DIR/versions/node/$_resolved/bin" ]; then
+    export PATH="$NVM_DIR/versions/node/$_resolved/bin:$PATH"
+    _nvm_used_startup=1
+  fi
 fi
-unset _nvm_default_ver
 
-# --- Lazy-load nvm; load only when calling `nvm` ---
-nvm() {
-  unset -f nvm
-  if [ -s "$NVM_DIR/nvm.sh" ]; then
-    . "$NVM_DIR/nvm.sh"
-  else
-    print -u2 "nvm: cannot find $NVM_DIR/nvm.sh (NVM_DIR=$NVM_DIR)"
-    return 127
+# 4) Fallback to global default if project didn't resolve
+if [ -z "$_nvm_used_startup" ] && [ -n "$_nvm_default_ver" ]; then
+  if [[ "$_nvm_default_ver" == v* ]] && [ -d "$NVM_DIR/versions/node/$_nvm_default_ver/bin" ]; then
+    export PATH="$NVM_DIR/versions/node/$_nvm_default_ver/bin:$PATH"
   fi
+fi
 
-  # Copy the real nvm function, then wrap it to auto-save version changes
-  if typeset -f nvm >/dev/null; then
-    functions -c nvm __nvm_real
-    nvm() {
-      if [[ "$1" == "use" && -n "$2" ]]; then
-        # Switch version
-        if __nvm_real use "$2"; then
-          # Get the resolved version after switching (e.g. v20.12.2)
-          local _resolved
-          _resolved="$(__nvm_real current)"
-
-          # Save it to both ~/.nvmrc and alias/default
-          if [[ "$_resolved" == v* ]]; then
-            print -r -- "$_resolved" > "$HOME/.nvmrc"
-            mkdir -p "$NVM_DIR/alias"
-            print -r -- "$_resolved" > "$NVM_DIR/alias/default"
-          fi
-          unset _resolved
-        fi
-      else
-        __nvm_real "$@"
-      fi
-    }
-  fi
-
-  # Run the original command that triggered this function
-  nvm "$@"
-}
-
-# Shortcut: manually apply project's .nvmrc when you want
-alias nvmrc='[ -f .nvmrc ] && nvm use "$(cat .nvmrc)"'
+unset _nvm_project_ver _nvm_default_ver _nvm_used_startup _resolved _glob _v
