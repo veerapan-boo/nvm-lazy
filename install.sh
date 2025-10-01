@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGET_DIR="${HOME}/.config/zsh"
-TARGET_FILE="${TARGET_DIR}/nvm-lazy.zsh"
+TARGET_DIR="$HOME/.config/zsh"
+TARGET_FILE="$TARGET_DIR/nvm-lazy.zsh"
 ZSHRC="${ZDOTDIR:-$HOME}/.zshrc"
 
 MARK_START="# >>> nvm-lazy start >>>"
@@ -31,12 +31,12 @@ if grep -q "$MARK_START" "$ZSHRC" 2>/dev/null; then
   mv "$ZSHRC.tmp" "$ZSHRC"
 fi
 
-# append new block
+# append new block with $HOME (escaped so it stays in .zshrc)
 {
   echo ""
   echo "$MARK_START"
-  echo "if [ -r \"$TARGET_FILE\" ]; then"
-  echo "  source \"$TARGET_FILE\""
+  echo "if [ -r \"\$HOME/.config/zsh/nvm-lazy.zsh\" ]; then"
+  echo "  source \"\$HOME/.config/zsh/nvm-lazy.zsh\""
   echo "fi"
   echo "$MARK_END"
   echo ""
