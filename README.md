@@ -18,7 +18,7 @@ Fast startup + persistent Node.js version management.
 
 ---
 
-## 📦 Installation / Uninstallation
+## 📦 Installation
 
 ### 1. Install
 ```bash
