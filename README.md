@@ -25,7 +25,7 @@ Fast startup + persistent Node.js version management.
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/veerapan-boo/nvm-lazy/latest/install.sh)"
 ```
 
-#### Another Release Tag Version
+** Another Release Version **
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/veerapan-boo/nvm-lazy/v1.0.0/install.sh)"
 ```
