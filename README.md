@@ -35,17 +35,6 @@ Fast startup + persistent Node.js version management.
 ```bash
 source ~/.zshrc
 ```
-
-### Uninstall
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/veerapan-boo/nvm-lazy/main/uninstall.sh)"
-```
-
-Reload again:
-```bash
-source ~/.zshrc
-```
-
 ---
 
 ## 🛠 Usage
@@ -66,6 +55,17 @@ source ~/.zshrc
   ```bash
   echo "<Node Version>" > .nvmrc
   ```
+
+---
+### Uninstall
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/veerapan-boo/nvm-lazy/main/uninstall.sh)"
+```
+
+Reload again:
+```bash
+source ~/.zshrc
+```
 
 ---
 
