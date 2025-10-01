@@ -51,10 +51,18 @@ source ~/.zshrc
   ```
   → Instantly uses the saved default without loading `nvm.sh`
 
-- ** Apply a project’s `.nvmrc` manually**:
+## Manually
+** Apply a project’s `.nvmrc` manually**:
   ```bash
   echo "<Node Version>" > .nvmrc
   ```
+```
+project-example/
+├─ src/ 
+├─ index.ts 
+├─ .nvmrc     <--- v20.x.x to ~/.nvmrc (Example)
+└─ README.md 
+```
 
 ---
 ### Uninstall
