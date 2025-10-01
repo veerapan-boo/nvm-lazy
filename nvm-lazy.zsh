@@ -1,3 +1,4 @@
+# --- Fast default Node (without loading nvm.sh) ---
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 # 1) Prefer project's .nvmrc in $PWD (if present)
@@ -31,3 +32,47 @@ if [ -z "$_nvm_used_startup" ] && [ -n "$_nvm_default_ver" ]; then
 fi
 
 unset _nvm_project_ver _nvm_default_ver _nvm_used_startup _resolved _glob _v
+
+# --- Lazy-load nvm; load only when calling `nvm` ---
+nvm() {
+  unset -f nvm
+  if [ -s "$NVM_DIR/nvm.sh" ]; then
+    . "$NVM_DIR/nvm.sh"
+  else
+    print -u2 "nvm: cannot find $NVM_DIR/nvm.sh (NVM_DIR=$NVM_DIR)"
+    return 127
+  fi
+
+  # Copy the real nvm function, then wrap it to persist whenever "current" changes
+  if typeset -f nvm >/dev/null; then
+    functions -c nvm __nvm_real
+    nvm() {
+      # current before
+      local _before
+      _before="$(__nvm_real current 2>/dev/null || true)"
+
+      # run real nvm
+      __nvm_real "$@"
+      local _status=$?
+
+      # current after
+      local _after
+      _after="$(__nvm_real current 2>/dev/null || true)"
+
+      # if changed to a resolvable vX.Y.Z, persist to ~/.nvmrc and alias/default
+      if [ "$_status" -eq 0 ] && [ -n "$_after" ] && [ "$_after" != "$_before" ] && [[ "$_after" == v* ]]; then
+        print -r -- "$_after" > "$HOME/.nvmrc"
+        mkdir -p "$NVM_DIR/alias"
+        print -r -- "$_after" > "$NVM_DIR/alias/default"
+      fi
+
+      return $_status
+    }
+  fi
+
+  # Run the original command that triggered this function
+  nvm "$@"
+}
+
+# Shortcut: manually apply project's .nvmrc when you want
+alias nvmrc='[ -f .nvmrc ] && nvm use "$(cat .nvmrc)"'
