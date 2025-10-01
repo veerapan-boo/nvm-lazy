@@ -1,0 +1,24 @@
+name: Update latest branch on release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync `latest` to this release tag
+        env:
+          TAG: ${{ github.ref_name }}   # e.g. v2.0.0
+        run: |
+          git checkout -B latest "$TAG"
+          git push --force origin latest
