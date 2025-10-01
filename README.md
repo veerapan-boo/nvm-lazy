@@ -20,12 +20,18 @@ Fast startup + persistent Node.js version management.
 
 ## 📦 Installation / Uninstallation
 
-### Install
+### 1. Install
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/veerapan-boo/nvm-lazy/main/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/veerapan-boo/nvm-lazy/latest/install.sh)"
 ```
 
-Reload your shell:
+#### Another Release Tag Version
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/veerapan-boo/nvm-lazy/v1.0.0/install.sh)"
+```
+
+
+### 2. Reload your shell:
 ```bash
 source ~/.zshrc
 ```
@@ -56,9 +62,9 @@ source ~/.zshrc
   ```
   → Instantly uses the saved default without loading `nvm.sh`
 
-- **Apply a project’s `.nvmrc` manually**:
+- ** Apply a project’s `.nvmrc` manually**:
   ```bash
-  nvmrc
+  echo "<Node Version>" > .nvmrc
   ```
 
 ---
